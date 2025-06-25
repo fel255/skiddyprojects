@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Format Telegram message
   function formatMessage(formData) {
-    return `📨 New Message from Iconic Tech Website:
+    return `📨 New Message Felician Website:
         
 👤 Username: ${formData.username}
 📌 Source: ${formData.source}
@@ -103,8 +103,8 @@ ${formData.message}`;
     
     // In a real implementation, you would have:
     
-    const botToken = '6184226714:AAH2Y3fLX5qM3kapPC0Mj5m8ay9Lr4Suql8';
-    const chatId = '5028094995';
+    const botToken = '0741927849:AAH2Y3fLX5qM3kapPC0Mj5m8ay9Lr4Suql8';
+    const chatId = '0619712382';
     
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
