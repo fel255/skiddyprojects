@@ -1,84 +1,1118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Felician-Contact</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>felician | Website Extractor 🌐</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #03e9f4;
+      --secondary-color: #00bcd4;
+      --dark-bg: #0f0f0f;
+      --light-text: #e0e0e0;
+      --code-bg: #111;
+      --border-color: #333;
+      --success-color: #0f0;
+      --error-color: #f44336;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    body {
+      background-color: var(--dark-bg);
+      color: var(--light-text);
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+    }
+
+    .input-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="url"] {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: 5px;
+      border: 1px solid var(--border-color);
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--light-text);
+      font-size: 16px;
+      min-width: 200px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: var(--primary-color);
+      color: black;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .status {
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .success {
+      background-color: rgba(0, 255, 0, 0.1);
+      color: var(--success-color);
+    }
+
+    .error {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: var(--error-color);
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .result-section {
+      background-color: rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      padding: 15px;
+    }
+
+    .result-section h2 {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .content {
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    pre {
+      background-color: var(--code-bg);
+      padding: 15px;
+      border-radius: 5px;
+      color: #0f0;
+      font-size: 14px;
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .media-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .media-item {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 5px;
+      word-break: break-all;
+      position: relative;
+    }
+
+    .media-copy {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      padding: 2px 5px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.7em;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--light-text);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
 <body>
-    <audio id="messageSound" preload="auto">
-    <source src="audio.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
-    <div class="telegram-container">
-        <header class="telegram-header">
-            <div class="header-content">
-                <i class="fab fa-telegram telegram-icon"></i>
-                <h1>contact Felician</h1>
-            </div>
-        </header>
+<canvas id="flowers"></canvas>
 
-        <main class="telegram-main">
-            <form id="contactForm" class="telegram-form">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required placeholder="@username">
-                </div>
+<div class="container">
+  <h1>SKIDDBMX🌐 Content Extractor</h1>
 
-                <div class="form-group">
-                    <label for="source">Where did you hear about me?</label>
-                    <select id="source" name="source" required>
-                        <option value="">Select an option</option>
-                        <option value="telegram">Telegram</option>
-                        <option value="whatsapp">WhatsApp</option>
-                        <option value="friend">Friend</option>
-                        <option value="social">Social Media</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
+  <div class="input-section">
+    <input type="url" id="url-input" placeholder="Enter website URL (e.g., https://example.com)" required />
+    <button id="extract-btn">Extract</button>
+  </div>
 
-                <div class="form-group">
-                    <label for="whatsapp">WhatsApp Number</label>
-                    <input type="tel" id="whatsapp" name="whatsapp" required placeholder="+263******">
-                </div>
+  <div id="status" class="status" style="display: none;"></div>
 
-                <div class="form-group">
-                    <label for="message">Your Message</label>
-                    <textarea id="message" name="message" required placeholder="Type your message here..."></textarea>
-                </div>
-
-                <div class="form-buttons">
-                    <button type="button" id="deleteBtn" class="btn delete-btn">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                    <button type="submit" id="sendBtn" class="btn send-btn">
-                        <i class="fas fa-paper-plane"></i> Send
-                    </button>
-                </div>
-            </form>
-
-            <div id="statusMessage" class="status-message"></div>
-        </main>
-
-        <footer class="telegram-footer">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <p>© 2025-2030 Felician</p>
-                </div>
-                <div class="footer-social">
-                    <p>Follow us:</p>
-                    <a href="" target="_blank" class="social-icon">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
-                </div>
-            </div>
-        </footer>
+  <div id="results" class="results" style="display: none;">
+    <div class="result-section" id="html-section">
+      <h2>
+        <span>HTML Content</span>
+        <button onclick="copyElementContent('html-content')">Copy</button>
+      </h2>
+      <div class="content"><pre id="html-content"></pre></div>
     </div>
 
-    <audio id="messageSound" src="notification.mp3" preload="auto"></audio>
-    
-    <script src="script.js"></script>
+    <div class="result-section" id="css-section">
+      <h2>
+        <span>CSS Files</span>
+        <button onclick="copyElementContent('css-content')">Copy</button>
+      </h2>
+      <div class="content" id="css-content"></div>
+    </div>
+
+    <div class="result-section" id="js-section">
+      <h2>
+        <span>JavaScript Files</span>
+        <button onclick="copyElementContent('js-content')">Copy</button>
+      </h2>
+      <div class="content" id="js-content"></div>
+    </div>
+
+    <div class="result-section" id="media-section">
+      <h2>
+        <span>Media Files</span>
+        <button onclick="copyElementContent('media-content')">Copy</button>
+      </h2>
+      <div class="content">
+        <div class="media-list" id="media-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function copyElementContent(id) {
+    const el = document.getElementById(id);
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    try {
+      document.execCommand('copy');
+      showStatus('Copied!', false);
+    } catch (e) {
+      showStatus('Failed to copy.', true);
+    }
+    window.getSelection().removeAllRanges();
+  }
+
+  function showStatus(msg, isError = false) {
+    const status = document.getElementById('status');
+    status.textContent = msg;
+    status.className = isError ? 'status error' : 'status success';
+    status.style.display = 'block';
+  }
+
+  function isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function makeAbsoluteUrl(url, base) {
+    try {
+      return new URL(url, base).href;
+    } catch {
+      return url;
+    }
+  }
+
+  document.getElementById('extract-btn').onclick = async () => {
+    const url = document.getElementById('url-input').value.trim();
+    const btn = document.getElementById('extract-btn');
+
+    if (!isValidUrl(url)) return showStatus('Invalid URL', true);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading"></span> Extracting...';
+    showStatus('Loading...');
+
+    try {
+      const res = await axios.get(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+      const html = res.data.contents;
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+
+      document.getElementById('html-content').textContent = html;
+      document.getElementById('results').style.display = 'block';
+
+      const extract = (sel, attr) =>
+        [...doc.querySelectorAll(sel)].map(e => makeAbsoluteUrl(e.getAttribute(attr), url)).filter(Boolean);
+
+      const fill = (id, list) => {
+        const el = document.getElementById(id);
+        el.innerHTML = list.length ? list.map(i => `<div><pre>${i}</pre></div>`).join('') : '<p>None Found.</p>';
+      };
+
+      fill('css-content', extract('link[rel="stylesheet"]', 'href'));
+      fill('js-content', extract('script[src]', 'src'));
+
+      const media = extract('img[src], video[src], audio[src], source[src]', 'src');
+      const mediaContent = document.getElementById('media-content');
+      mediaContent.innerHTML = media.map(url => `<div class="media-item">${url}</div>`).join('');
+    } catch (e) {
+      showStatus('Error extracting site.', true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Extract';
+    }
+  };
+</script>
+
+<script>
+  // Falling Flowers Theme (Canvas)
+  const canvas = document.getElementById('flowers');
+  const ctx = canvas.getContext('2d');
+  let flowers = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  class Flower {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = -20;
+      this.r = Math.random() * 8 + 4;
+      this.speed = Math.random() * 1 + 0.5;
+      this.alpha = Math.random() * 0.5 + 0.5;
+      this.color = `rgba(255, 192, 203, ${this.alpha})`;
+    }
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JamesTech | Website Extractor 🌐</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #03e9f4;
+      --secondary-color: #00bcd4;
+      --dark-bg: #0f0f0f;
+      --light-text: #e0e0e0;
+      --code-bg: #111;
+      --border-color: #333;
+      --success-color: #0f0;
+      --error-color: #f44336;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    body {
+      background-color: var(--dark-bg);
+      color: var(--light-text);
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+    }
+
+    .input-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="url"] {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: 5px;
+      border: 1px solid var(--border-color);
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--light-text);
+      font-size: 16px;
+      min-width: 200px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: var(--primary-color);
+      color: black;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .status {
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .success {
+      background-color: rgba(0, 255, 0, 0.1);
+      color: var(--success-color);
+    }
+
+    .error {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: var(--error-color);
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .result-section {
+      background-color: rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      padding: 15px;
+    }
+
+    .result-section h2 {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .content {
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    pre {
+      background-color: var(--code-bg);
+      padding: 15px;
+      border-radius: 5px;
+      color: #0f0;
+      font-size: 14px;
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .media-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .media-item {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 5px;
+      word-break: break-all;
+      position: relative;
+    }
+
+    .media-copy {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      padding: 2px 5px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.7em;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--light-text);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+<canvas id="flowers"></canvas>
+
+<div class="container">
+  <h1>JamesTech 🌐 Content Extractor</h1>
+
+  <div class="input-section">
+    <input type="url" id="url-input" placeholder="Enter website URL (e.g., https://example.com)" required />
+    <button id="extract-btn">Extract</button>
+  </div>
+
+  <div id="status" class="status" style="display: none;"></div>
+
+  <div id="results" class="results" style="display: none;">
+    <div class="result-section" id="html-section">
+      <h2>
+        <span>HTML Content</span>
+        <button onclick="copyElementContent('html-content')">Copy</button>
+      </h2>
+      <div class="content"><pre id="html-content"></pre></div>
+    </div>
+
+    <div class="result-section" id="css-section">
+      <h2>
+        <span>CSS Files</span>
+        <button onclick="copyElementContent('css-content')">Copy</button>
+      </h2>
+      <div class="content" id="css-content"></div>
+    </div>
+
+    <div class="result-section" id="js-section">
+      <h2>
+        <span>JavaScript Files</span>
+        <button onclick="copyElementContent('js-content')">Copy</button>
+      </h2>
+      <div class="content" id="js-content"></div>
+    </div>
+
+    <div class="result-section" id="media-section">
+      <h2>
+        <span>Media Files</span>
+        <button onclick="copyElementContent('media-content')">Copy</button>
+      </h2>
+      <div class="content">
+        <div class="media-list" id="media-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function copyElementContent(id) {
+    const el = document.getElementById(id);
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    try {
+      document.execCommand('copy');
+      showStatus('Copied!', false);
+    } catch (e) {
+      showStatus('Failed to copy.', true);
+    }
+    window.getSelection().removeAllRanges();
+  }
+
+  function showStatus(msg, isError = false) {
+    const status = document.getElementById('status');
+    status.textContent = msg;
+    status.className = isError ? 'status error' : 'status success';
+    status.style.display = 'block';
+  }
+
+  function isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function makeAbsoluteUrl(url, base) {
+    try {
+      return new URL(url, base).href;
+    } catch {
+      return url;
+    }
+  }
+
+  document.getElementById('extract-btn').onclick = async () => {
+    const url = document.getElementById('url-input').value.trim();
+    const btn = document.getElementById('extract-btn');
+
+    if (!isValidUrl(url)) return showStatus('Invalid URL', true);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading"></span> Extracting...';
+    showStatus('Loading...');
+
+    try {
+      const res = await axios.get(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+      const html = res.data.contents;
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+
+      document.getElementById('html-content').textContent = html;
+      document.getElementById('results').style.display = 'block';
+
+      const extract = (sel, attr) =>
+        [...doc.querySelectorAll(sel)].map(e => makeAbsoluteUrl(e.getAttribute(attr), url)).filter(Boolean);
+
+      const fill = (id, list) => {
+        const el = document.getElementById(id);
+        el.innerHTML = list.length ? list.map(i => `<div><pre>${i}</pre></div>`).join('') : '<p>None Found.</p>';
+      };
+
+      fill('css-content', extract('link[rel="stylesheet"]', 'href'));
+      fill('js-content', extract('script[src]', 'src'));
+
+      const media = extract('img[src], video[src], audio[src], source[src]', 'src');
+      const mediaContent = document.getElementById('media-content');
+      mediaContent.innerHTML = media.map(url => `<div class="media-item">${url}</div>`).join('');
+    } catch (e) {
+      showStatus('Error extracting site.', true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Extract';
+    }
+  };
+</script>
+
+<script>
+  // Falling Flowers Theme (Canvas)
+  const canvas = document.getElementById('flowers');
+  const ctx = canvas.getContext('2d');
+  let flowers = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  class Flower {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = -20;
+      this.r = Math.random() * 8 + 4;
+      this.speed = Math.random() * 1 + 0.5;
+      this.alpha = Math.random() * 0.5 + 0.5;
+      this.color = `rgba(255, 192, 203, ${this.alpha})`;
+    }
+
+    update() {
+      this.y += this.speed;
+      if (this.y > canvas.height) this.reset();
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.fill();
+    }
+  }
+
+  function animateFlowers() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    while (flowers.length < 100) flowers.push(new Flower());
+    for (const flower of flowers) {
+      flower.update();
+      flower.draw();
+    }
+    requestAnimationFrame(animateFlowers);
+  }
+
+  animateFlowers();
+</script>
 </body>
-</html>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JamesTech | Website Extractor 🌐</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #03e9f4;
+      --secondary-color: #00bcd4;
+      --dark-bg: #0f0f0f;
+      --light-text: #e0e0e0;
+      --code-bg: #111;
+      --border-color: #333;
+      --success-color: #0f0;
+      --error-color: #f44336;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    body {
+      background-color: var(--dark-bg);
+      color: var(--light-text);
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+    }
+
+    .input-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="url"] {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: 5px;
+      border: 1px solid var(--border-color);
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--light-text);
+      font-size: 16px;
+      min-width: 200px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: var(--primary-color);
+      color: black;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .status {
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .success {
+      background-color: rgba(0, 255, 0, 0.1);
+      color: var(--success-color);
+    }
+
+    .error {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: var(--error-color);
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .result-section {
+      background-color: rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      padding: 15px;
+    }
+
+    .result-section h2 {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .content {
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    pre {
+      background-color: var(--code-bg);
+      padding: 15px;
+      border-radius: 5px;
+      color: #0f0;
+      font-size: 14px;
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .media-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .media-item {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 5px;
+      word-break: break-all;
+      position: relative;
+    }
+
+    .media-copy {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      padding: 2px 5px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.7em;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--light-text);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+<canvas id="flowers"></canvas>
+
+<div class="container">
+  <h1>JamesTech 🌐 Content Extractor</h1>
+
+  <div class="input-section">
+    <input type="url" id="url-input" placeholder="Enter website URL (e.g., https://example.com)" required />
+    <button id="extract-btn">Extract</button>
+  </div>
+
+  <div id="status" class="status" style="display: none;"></div>
+
+  <div id="results" class="results" style="display: none;">
+    <div class="result-section" id="html-section">
+      <h2>
+        <span>HTML Content</span>
+        <button onclick="copyElementContent('html-content')">Copy</button>
+      </h2>
+      <div class="content"><pre id="html-content"></pre></div>
+    </div>
+
+    <div class="result-section" id="css-section">
+      <h2>
+        <span>CSS Files</span>
+        <button onclick="copyElementContent('css-content')">Copy</button>
+      </h2>
+      <div class="content" id="css-content"></div>
+    </div>
+
+    <div class="result-section" id="js-section">
+      <h2>
+        <span>JavaScript Files</span>
+        <button onclick="copyElementContent('js-content')">Copy</button>
+      </h2>
+      <div class="content" id="js-content"></div>
+    </div>
+
+    <div class="result-section" id="media-section">
+      <h2>
+        <span>Media Files</span>
+        <button onclick="copyElementContent('media-content')">Copy</button>
+      </h2>
+      <div class="content">
+        <div class="media-list" id="media-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function copyElementContent(id) {
+    const el = document.getElementById(id);
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    try {
+      document.execCommand('copy');
+      showStatus('Copied!', false);
+    } catch (e) {
+      showStatus('Failed to copy.', true);
+    }
+    window.getSelection().removeAllRanges();
+  }
+
+  function showStatus(msg, isError = false) {
+    const status = document.getElementById('status');
+    status.textContent = msg;
+    status.className = isError ? 'status error' : 'status success';
+    status.style.display = 'block';
+  }
+
+  function isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function makeAbsoluteUrl(url, base) {
+    try {
+      return new URL(url, base).href;
+    } catch {
+      return url;
+    }
+  }
+
+  document.getElementById('extract-btn').onclick = async () => {
+    const url = document.getElementById('url-input').value.trim();
+    const btn = document.getElementById('extract-btn');
+
+    if (!isValidUrl(url)) return showStatus('Invalid URL', true);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading"></span> Extracting...';
+    showStatus('Loading...');
+
+    try {
+      const res = await axios.get(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+      const html = res.data.contents;
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+
+      document.getElementById('html-content').textContent = html;
+      document.getElementById('results').style.display = 'block';
+
+      const extract = (sel, attr) =>
+        [...doc.querySelectorAll(sel)].map(e => makeAbsoluteUrl(e.getAttribute(attr), url)).filter(Boolean);
+
+      const fill = (id, list) => {
+        const el = document.getElementById(id);
+        el.innerHTML = list.length ? list.map(i => `<div><pre>${i}</pre></div>`).join('') : '<p>None Found.</p>';
+      };
+
+      fill('css-content', extract('link[rel="stylesheet"]', 'href'));
+      fill('js-content', extract('script[src]', 'src'));
+
+      const media = extract('img[src], video[src], audio[src], source[src]', 'src');
+      const mediaContent = document.getElementById('media-content');
+      mediaContent.innerHTML = media.map(url => `<div class="media-item">${url}</div>`).join('');
+    } catch (e) {
+      showStatus('Error extracting site.', true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Extract';
+    }
+  };
+</script>
+
+<script>
+  // Falling Flowers Theme (Canvas)
+  const canvas = document.getElementById('flowers');
+  const ctx = canvas.getContext('2d');
+  let flowers = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  class Flower {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = -20;
+      this.r = Math.random() * 8 + 4;
+      this.speed = Math.random() * 1 + 0.5;
+      this.alpha = Math.random() * 0.5 + 0.5;
+      this.color = `rgba(255, 192, 203, ${this.alpha})`;
+    }
+
+    update() {
+      this.y += this.speed;
+      if (this.y > canvas.height) this.reset();
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.fill();
+    }
+  }
+
+  function animateFlowers() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    while (flowers.length < 100) flowers.push(new Flower());
+    for (const flower of flowers) {
+      flower.update();
+      flower.draw();
+    }
+    requestAnimationFrame(animateFlowers);
+  }
+
+  animateFlowers();
+</script>
+</body>
+    </html>
