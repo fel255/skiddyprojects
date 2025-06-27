@@ -324,12 +324,12 @@
                             // Repo is up to date - show deploy button only
                             showResult('Your fork is up to date and ready for deployment!', 'success');
                             deployBtn.style.display = 'block';
-                            repoInfo.textContent = `Repository: ${username}/Mercedes (up to date)`;
+                            repoInfo.textContent = `Repository: ${username}/IT-TECH (up to date)`;
                         } else {
                             // Repo is behind - show sync button only
                             showResult('Your fork is behind the original repository. Please sync before deploying.', 'warning');
                             syncBtn.style.display = 'block';
-                            repoInfo.textContent = `Repository: ${username}/Mercedes (behind upstream)`;
+                            repoInfo.textContent = `Repository: ${username}/IT-TECH (behind upstream)`;
                         }
                     } else {
                         showResult('This repository is not a fork of the required repository.', 'error');
