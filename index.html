@@ -1,382 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Felician | Website Extractor 🌐</title>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <style>
-    :root {
-      --primary-color: #03e9f4;
-      --secondary-color: #00bcd4;
-      --dark-bg: #0f0f0f;
-      --light-text: #e0e0e0;
-      --code-bg: #111;
-      --border-color: #333;
-      --success-color: #0f0;
-      --error-color: #f44336;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FELICIAN-DEPLOYMENT-BOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-purple: #b400ff;
+            --neon-pink: #ff00aa;
+            --dark-bg: #0a0a1a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--dark-bg);
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: monospace;
-    }
+        /* Grid Background */
+        .grid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            opacity: 0.3;
+        }
 
-    body {
-      background-color: var(--dark-bg);
-      color: var(--light-text);
-      min-height: 100vh;
-      padding: 20px;
-      position: relative;
-      overflow-x: hidden;
-    }
+        /* Main Loading Container */
+        .loading-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 30px;
+            position: relative;
+            z-index: 2;
+        }
 
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
+        /* Holographic Card Effect */
+        .card {
+            background: rgba(15, 20, 40, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 
+                0 0 30px rgba(0, 242, 255, 0.3),
+                0 0 60px rgba(180, 0, 255, 0.3);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: cardFloat 6s ease-in-out infinite;
+        }
 
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent,
+                transparent,
+                rgba(0, 242, 255, 0.1),
+                rgba(180, 0, 255, 0.1)
+            );
+            transform: rotate(30deg);
+            z-index: -1;
+            animation: shine 8s linear infinite;
+        }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
-    }
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
 
-    .input-section {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
+        @keyframes shine {
+            0% { transform: rotate(30deg) translate(-30%, -30%); }
+            100% { transform: rotate(30deg) translate(30%, 30%); }
+        }
 
-    input[type="url"] {
-      flex: 1;
-      padding: 10px 15px;
-      border-radius: 5px;
-      border: 1px solid var(--border-color);
-      background-color: rgba(255, 255, 255, 0.05);
-      color: var(--light-text);
-      font-size: 16px;
-      min-width: 200px;
-    }
+        /* Avatar Image */
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            border: 3px solid var(--neon-blue);
+            box-shadow: 
+                0 0 20px var(--neon-blue),
+                0 0 40px rgba(0, 242, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: pulse 3s infinite alternate;
+        }
 
-    button {
-      padding: 10px 20px;
-      background-color: var(--primary-color);
-      color: black;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.3s;
-    }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-    button:hover {
-      background-color: var(--secondary-color);
-    }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px var(--neon-blue); }
+            100% { box-shadow: 0 0 40px var(--neon-purple); }
+        }
 
-    .status {
-      margin-bottom: 20px;
-      padding: 10px;
-      border-radius: 5px;
-      text-align: center;
-    }
+        /* Loading Text */
+        .loading-text {
+            margin: 25px 0;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+            animation: textGlow 2s infinite alternate;
+        }
 
-    .success {
-      background-color: rgba(0, 255, 0, 0.1);
-      color: var(--success-color);
-    }
+        @keyframes textGlow {
+            0% { opacity: 0.8; text-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
+            100% { opacity: 1; text-shadow: 0 0 20px rgba(180, 0, 255, 0.8); }
+        }
 
-    .error {
-      background-color: rgba(244, 67, 54, 0.1);
-      color: var(--error-color);
-    }
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
 
-    .results {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            border-radius: 10px;
+            animation: progressLoad 4s ease-in-out forwards;
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
 
-    .result-section {
-      background-color: rgba(0, 0, 0, 0.3);
-      border-radius: 5px;
-      padding: 15px;
-    }
+        @keyframes progressLoad {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
 
-    .result-section h2 {
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-    }
+        /* Status Text */
+        .status-text {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 15px;
+            font-family: 'Montserrat', sans-serif;
+            animation: statusChange 8s infinite;
+        }
 
-    .content {
-      margin-top: 10px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
+        @keyframes statusChange {
+            0% { content: "Initializing systems..."; }
+            25% { content: "Loading core modules..."; }
+            50% { content: "Establishing connection..."; }
+            75% { content: "Preparing interface..."; }
+            100% { content: "Almost there..."; }
+        }
 
-    pre {
-      background-color: var(--code-bg);
-      padding: 15px;
-      border-radius: 5px;
-      color: #0f0;
-      font-size: 14px;
-      white-space: pre-wrap;
-      position: relative;
-    }
+        /* Floating Tech Elements */
+        .tech-element {
+            position: absolute;
+            opacity: 0.1;
+            z-index: 1;
+            animation: floatTech 15s infinite linear;
+            font-size: 24px;
+        }
 
-    .copy-btn {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: rgba(0, 0, 0, 0.6);
-      color: white;
-      border: none;
-      padding: 3px 8px;
-      border-radius: 3px;
-      cursor: pointer;
-    }
+        @keyframes floatTech {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(50px, 50px) rotate(90deg); }
+            50% { transform: translate(100px, 0) rotate(180deg); }
+            75% { transform: translate(50px, -50px) rotate(270deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
 
-    .media-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 10px;
-    }
-
-    .media-item {
-      background-color: rgba(0, 0, 0, 0.5);
-      padding: 10px;
-      border-radius: 5px;
-      word-break: break-all;
-      position: relative;
-    }
-
-    .media-copy {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
-      border: none;
-      padding: 2px 5px;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 0.7em;
-    }
-
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: var(--light-text);
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
+        /* Responsive Adjustments */
+        @media (max-width: 600px) {
+            .card {
+                padding: 30px 20px;
+            }
+            
+            .avatar {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .loading-text {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
 </head>
 <body>
-<canvas id="flowers"></canvas>
+    <!-- Grid Background -->
+    <div class="grid-bg"></div>
+    
+    <!-- Floating Tech Elements -->
+    <div class="tech-element" style="top: 10%; left: 15%;">⚙️</div>
+    <div class="tech-element" style="top: 80%; left: 80%;">🔌</div>
+    <div class="tech-element" style="top: 30%; left: 70%;">💻</div>
+    <div class="tech-element" style="top: 70%; left: 20%;">🔧</div>
+    <div class="tech-element" style="top: 20%; left: 85%;">📱</div>
 
-<div class="container">
-  <h1>Felician 🌐 Content Extractor</h1>
-
-  <div class="input-section">
-    <input type="url" id="url-input" placeholder="Enter website URL (e.g., https://example.com)" required />
-    <button id="extract-btn">Extract</button>
-  </div>
-
-  <div id="status" class="status" style="display: none;"></div>
-
-  <div id="results" class="results" style="display: none;">
-    <div class="result-section" id="html-section">
-      <h2>
-        <span>HTML Content</span>
-        <button onclick="copyElementContent('html-content')">Copy</button>
-      </h2>
-      <div class="content"><pre id="html-content"></pre></div>
+    <!-- Main Loading Container -->
+    <div class="loading-container">
+        <div class="card">
+            <div class="avatar">
+                <img src="https://files.catbox.moe/yhy4en.jpg" alt="SKIDDBMX">
+            </div>
+            
+            <div class="loading-text">FELICIAN DEPLOYMENT</div>
+            
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            
+            <div class="status-text" id="statusText">Initializing deployment sequence...</div>
+        </div>
     </div>
 
-    <div class="result-section" id="css-section">
-      <h2>
-        <span>CSS Files</span>
-        <button onclick="copyElementContent('css-content')">Copy</button>
-      </h2>
-      <div class="content" id="css-content"></div>
-    </div>
-
-    <div class="result-section" id="js-section">
-      <h2>
-        <span>JavaScript Files</span>
-        <button onclick="copyElementContent('js-content')">Copy</button>
-      </h2>
-      <div class="content" id="js-content"></div>
-    </div>
-
-    <div class="result-section" id="media-section">
-      <h2>
-        <span>Media Files</span>
-        <button onclick="copyElementContent('media-content')">Copy</button>
-      </h2>
-      <div class="content">
-        <div class="media-list" id="media-content"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  function copyElementContent(id) {
-    const el = document.getElementById(id);
-    const range = document.createRange();
-    range.selectNode(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    try {
-      document.execCommand('copy');
-      showStatus('Copied!', false);
-    } catch (e) {
-      showStatus('Failed to copy.', true);
-    }
-    window.getSelection().removeAllRanges();
-  }
-
-  function showStatus(msg, isError = false) {
-    const status = document.getElementById('status');
-    status.textContent = msg;
-    status.className = isError ? 'status error' : 'status success';
-    status.style.display = 'block';
-  }
-
-  function isValidUrl(url) {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  function makeAbsoluteUrl(url, base) {
-    try {
-      return new URL(url, base).href;
-    } catch {
-      return url;
-    }
-  }
-
-  document.getElementById('extract-btn').onclick = async () => {
-    const url = document.getElementById('url-input').value.trim();
-    const btn = document.getElementById('extract-btn');
-
-    if (!isValidUrl(url)) return showStatus('Invalid URL', true);
-
-    btn.disabled = true;
-    btn.innerHTML = '<span class="loading"></span> Extracting...';
-    showStatus('Loading...');
-
-    try {
-      const res = await axios.get(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-      const html = res.data.contents;
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-
-      document.getElementById('html-content').textContent = html;
-      document.getElementById('results').style.display = 'block';
-
-      const extract = (sel, attr) =>
-        [...doc.querySelectorAll(sel)].map(e => makeAbsoluteUrl(e.getAttribute(attr), url)).filter(Boolean);
-
-      const fill = (id, list) => {
-        const el = document.getElementById(id);
-        el.innerHTML = list.length ? list.map(i => `<div><pre>${i}</pre></div>`).join('') : '<p>None Found.</p>';
-      };
-
-      fill('css-content', extract('link[rel="stylesheet"]', 'href'));
-      fill('js-content', extract('script[src]', 'src'));
-
-      const media = extract('img[src], video[src], audio[src], source[src]', 'src');
-      const mediaContent = document.getElementById('media-content');
-      mediaContent.innerHTML = media.map(url => `<div class="media-item">${url}</div>`).join('');
-    } catch (e) {
-      showStatus('Error extracting site.', true);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Extract';
-    }
-  };
-</script>
-
-<script>
-  // Falling Flowers Theme (Canvas)
-  const canvas = document.getElementById('flowers');
-  const ctx = canvas.getContext('2d');
-  let flowers = [];
-
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
-  class Flower {
-    constructor() {
-      this.reset();
-    }
-
-    reset() {
-      this.x = Math.random() * canvas.width;
-      this.y = -20;
-      this.r = Math.random() * 8 + 4;
-      this.speed = Math.random() * 1 + 0.5;
-      this.alpha = Math.random() * 0.5 + 0.5;
-      this.color = `rgba(255, 192, 203, ${this.alpha})`;
-    }
-
-    update() {
-      this.y += this.speed;
-      if (this.y > canvas.height) this.reset();
-    }
-
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-      ctx.fillStyle = this.color;
-      ctx.fill();
-    }
-  }
-
-  function animateFlowers() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    while (flowers.length < 100) flowers.push(new Flower());
-    for (const flower of flowers) {
-      flower.update();
-      flower.draw();
-    }
-    requestAnimationFrame(animateFlowers);
-  }
-
-  animateFlowers();
-</script>
+    <script>
+        // Status text animation
+        const statusMessages = [
+            "Initializing deployment sequence...",
+            "Loading core modules...",
+            "Establishing cloud connection...",
+            "Configuring server environment...",
+            "Finalizing deployment setup..."
+        ];
+        
+        const statusElement = document.getElementById('statusText');
+        let currentStatus = 0;
+        
+        const statusInterval = setInterval(() => {
+            currentStatus = (currentStatus + 1) % statusMessages.length;
+            statusElement.textContent = statusMessages[currentStatus];
+        }, 2000);
+        
+        // Redirect after 6 seconds
+        setTimeout(() => {
+            clearInterval(statusInterval);
+            window.location.href = 'https://bwm-xmd-verification.vercel.app';
+        }, 6000);
+        
+        // Add particles dynamically
+        for (let i = 0; i < 10; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'tech-element';
+            particle.innerHTML = ['⚙️', '🤖', '💻', '🚨', '📱', '🆓', '🖥️', '📊', '🖇️', '🔋'][i];
+            particle.style.top = `${Math.random() * 100}%`;
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.animationDuration = `${5 + Math.random() * 10}s`;
+            particle.style.animationDelay = `${Math.random() * 5}s`;
+            document.body.appendChild(particle);
+        }
+    </script>
 </body>
-</html
+</html>
